@@ -219,8 +219,6 @@ SELECT id, name, registration_date FROM users;
 
 ## Доступ к веб-интерфейсам
 
-После настройки вы можете получить доступ к следующим веб-интерфейсам:
-
 - NameNode UI: http://176.109.91.7:9870
 - Secondary NameNode UI: http://176.109.91.7:9868
 - YARN Resource Manager: http://176.109.91.7:8088
