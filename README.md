@@ -5,6 +5,7 @@
 - Java (OpenJDK 11 или новее)
 - SSH доступ ко всем узлам
 - Привилегии sudo
+- Опубликованы веб интерфейсы для NameNode, Secondary NameNode, YARN ResourceManager, History Server по инструкциям из ДЗ1: https://github.com/szarema/Hadoop_hse, ДЗ2: https://github.com/easternn/dataplatform_2/tree/main 
 
 ## Шаг 1: Запуск сервисов Hadoop
 
@@ -214,96 +215,6 @@ STORED AS TEXTFILE;
 
 INSERT INTO TABLE users_partitioned PARTITION (registration_date)
 SELECT id, name, registration_date FROM users;
-```
-
-# Настройка аутентификации и прокси для Hadoop UI
-
-## Установка htpasswd (все действия воспроизводятся на jump-node)
-
-```bash
-sudo apt update
-sudo apt install apache2-utils
-```
-
-## Создание файла паролей
-
-```bash
-# Создаем файл паролей и добавляем пользователя
-sudo htpasswd -c /etc/nginx/.htpasswd hadoop
-# Вам будет предложено ввести пароль для hadoop
-# пароль: h@DooP$
-
-# Выдаем нужные права
-sudo chmod 644 /etc/nginx/.htpasswd
-```
-
-Примечание: Флаг `-c` создаёт новый файл. Если файл уже существует и вам нужно добавить ещё одного пользователя, используйте команду без `-c`:
-
-```bash
-sudo htpasswd /etc/nginx/.htpasswd new_user
-```
-
-## Настройка Nginx для NameNode UI
-
-```bash
-# Создаем файл для namenode
-touch /etc/nginx/sites-available/nn
-
-# Заполняем файл и прописываем аутентификацию по паролю
-sudo vim /etc/nginx/sites-available/nn
-```
-
-Содержимое файла:
-
-```nginx
-server {
-    listen 9870 default_server;
-    root /var/www/html;
-    index index.html index.htm index.nginx-debian.html;
-    server_name _;
-
-    location / {
-        proxy_pass http://team-5-nn:9870;
-        auth_basic "Restricted Access";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-    }
-}
-```
-
-```bash
-# Добавляем UI namenode к доступным сайтам
-sudo ln -s /etc/nginx/sites-available/nn /etc/nginx/sites-enabled/nn
-```
-
-## Настройка для других компонентов
-
-Повторите аналогичные шаги для (в каждом файле в двух местах меняем порты):
-- Secondary NameNode (порт 9868)
-- YARN Resource Manager (порт 8088)
-- History Server (порт 19888)
-
-### Secondary NameNode
-
-```bash
-sudo cp /etc/nginx/sites-available/nn /etc/nginx/sites-available/sn
-sudo vim /etc/nginx/sites-available/sn
-sudo ln -s /etc/nginx/sites-available/sn /etc/nginx/sites-enabled/sn
-```
-
-### YARN Resource Manager
-
-```bash
-sudo cp /etc/nginx/sites-available/nn /etc/nginx/sites-available/ya
-sudo vim /etc/nginx/sites-available/ya
-sudo ln -s /etc/nginx/sites-available/ya /etc/nginx/sites-enabled/ya
-```
-
-### History Server
-
-```bash
-sudo cp /etc/nginx/sites-available/nn /etc/nginx/sites-available/dh
-sudo vim /etc/nginx/sites-available/dh
-sudo ln -s /etc/nginx/sites-available/dh /etc/nginx/sites-enabled/dh
 ```
 
 ## Доступ к веб-интерфейсам
